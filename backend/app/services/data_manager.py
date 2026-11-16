@@ -54,6 +54,13 @@ class DataManager:
         return cls._instance
 
     def load_dataset(self, file_path: str, dataset_name: str = "Online Retail Dataset", is_sample: bool = False):
+        if not os.path.exists(file_path):
+            from app.utils.paths import CANDIDATE_DATA_PATHS
+            for p in CANDIDATE_DATA_PATHS:
+                if os.path.exists(p):
+                    file_path = p
+                    break
+
         self.current_file_path = file_path
         self.current_dataset_name = dataset_name
         self.is_sample = is_sample

@@ -48,10 +48,19 @@ async def upload_dataset(file: UploadFile = File(...)):
 @router.post("/load-sample")
 def load_sample_dataset():
     dm = DataManager.get_instance()
-    if not os.path.exists(dm.sample_path):
+    sample_file = dm.sample_path
+    if not os.path.exists(sample_file):
+        from app.utils.paths import CANDIDATE_DATA_PATHS
+        for p in CANDIDATE_DATA_PATHS:
+            if os.path.exists(p):
+                sample_file = p
+                dm.sample_path = p
+                break
+
+    if not os.path.exists(sample_file):
         raise HTTPException(status_code=404, detail="Sample dataset file not found on server.")
         
-    dm.load_dataset(dm.sample_path, dataset_name="Online Retail Sample (UCI E-Commerce)", is_sample=True)
+    dm.load_dataset(sample_file, dataset_name="Online Retail Sample (UCI E-Commerce)", is_sample=True)
     return {
         "message": "Sample dataset loaded successfully.",
         "dataset_name": dm.current_dataset_name,
@@ -62,8 +71,17 @@ def load_sample_dataset():
 @router.get("/dataset-summary")
 def get_dataset_summary():
     dm = DataManager.get_instance()
-    if dm.raw_inspection is None and os.path.exists(dm.sample_path):
-        dm.load_dataset(dm.sample_path, is_sample=True)
+    if dm.raw_inspection is None:
+        sample_file = dm.sample_path
+        if not os.path.exists(sample_file):
+            from app.utils.paths import CANDIDATE_DATA_PATHS
+            for p in CANDIDATE_DATA_PATHS:
+                if os.path.exists(p):
+                    sample_file = p
+                    dm.sample_path = p
+                    break
+        if os.path.exists(sample_file):
+            dm.load_dataset(sample_file, is_sample=True)
         
     return {
         "dataset_name": dm.current_dataset_name,

@@ -28,12 +28,14 @@ venv/
 .env
 
 # Trained models & runtime data
-CustomerIQ/trained_models/*.joblib
-CustomerIQ/trained_models/*.pkl
-CustomerIQ/data/uploads/*
-!CustomerIQ/data/uploads/.gitkeep
-CustomerIQ/reports/*.pdf
-CustomerIQ/reports/*.csv
+trained_models/*.joblib
+trained_models/*.pkl
+data/uploads/*
+!data/uploads/.gitkeep
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+reports/*.pdf
+reports/*.csv
 *.sqlite3
 *.db
 
@@ -50,5 +52,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+!.env.production
+!.env.development
 dist/
 build/

@@ -11,15 +11,18 @@ def get_db_connection():
     global _global_conn
     if _global_conn is None:
         try:
-            # Try file database first
+            # Test full write capability on file database
             conn = sqlite3.connect(DB_PATH, check_same_thread=False)
             cursor = conn.cursor()
             cursor.execute("CREATE TABLE IF NOT EXISTS _test_write (id INT)")
+            cursor.execute("INSERT INTO _test_write (id) VALUES (1)")
+            conn.commit()
+            cursor.execute("DROP TABLE _test_write")
             conn.commit()
             conn.row_factory = sqlite3.Row
             _global_conn = conn
         except Exception:
-            # Safe in-memory fallback for sandboxed/restricted environments
+            # Safe in-memory fallback for sandboxed / ephemeral container environments
             conn = sqlite3.connect(":memory:", check_same_thread=False)
             conn.row_factory = sqlite3.Row
             _global_conn = conn

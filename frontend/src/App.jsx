@@ -30,36 +30,29 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Dataset summary
+      // 1. Fetch Dataset summary first (wakes up backend if cold-starting on Render)
       const dSummary = await api.getDatasetSummary();
       setDatasetSummary(dSummary);
 
-      // 2. RFM
-      const rfm = await api.getRfmAnalysis();
-      setRfmMeta(rfm);
+      // 2. Fetch all analytics modules in parallel for high performance
+      const [rfmRes, clusteringRes, segmentsRes, churnRes, combinedRes, recsRes] = await Promise.allSettled([
+        api.getRfmAnalysis(),
+        api.getModelComparison(),
+        api.getCustomerSegments(),
+        api.getChurnResults(),
+        api.getCombinedInsights(),
+        api.getBusinessRecommendations(),
+      ]);
 
-      // 3. Clustering
-      const clustering = await api.getModelComparison();
-      setClusteringMeta(clustering);
-
-      // 4. Segments
-      const segments = await api.getCustomerSegments();
-      setSegmentMeta(segments);
-
-      // 5. Churn
-      const churn = await api.getChurnResults();
-      setChurnMeta(churn);
-
-      // 6. Combined
-      const combined = await api.getCombinedInsights();
-      setCombinedInsights(combined);
-
-      // 7. Recommendations
-      const recs = await api.getBusinessRecommendations();
-      setRecommendations(recs.recommendations || []);
+      if (rfmRes.status === 'fulfilled') setRfmMeta(rfmRes.value);
+      if (clusteringRes.status === 'fulfilled') setClusteringMeta(clusteringRes.value);
+      if (segmentsRes.status === 'fulfilled') setSegmentMeta(segmentsRes.value);
+      if (churnRes.status === 'fulfilled') setChurnMeta(churnRes.value);
+      if (combinedRes.status === 'fulfilled') setCombinedInsights(combinedRes.value);
+      if (recsRes.status === 'fulfilled') setRecommendations(recsRes.value?.recommendations || []);
     } catch (err) {
       console.error('Error fetching analytics telemetry:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to fetch dataset summary');
     } finally {
       setLoading(false);
     }

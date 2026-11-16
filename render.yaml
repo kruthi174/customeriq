@@ -1,0 +1,35 @@
+services:
+  # -------------------------------------------------------------
+  # Backend API Web Service
+  # -------------------------------------------------------------
+  - type: web
+    name: customeriq-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: ALLOWED_ORIGINS
+        value: https://customeriq-frontend-99nl.onrender.com,http://localhost:5173
+
+  # -------------------------------------------------------------
+  # Frontend Static Site
+  # -------------------------------------------------------------
+  - type: static
+    name: customeriq-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://customeriq-api-mhw.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
